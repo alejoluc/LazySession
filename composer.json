@@ -1,0 +1,22 @@
+{
+  "name": "alejoluc/autosession",
+  "description": "",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Alejo Lucangeli",
+      "email": "alejolucangeli@gmail.com"
+    }
+  ],
+
+  "require" : {
+      "php": ">=5.4.0"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "alejoluc\\": ["src/"]
+    }
+  }
+}
