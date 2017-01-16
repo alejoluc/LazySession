@@ -239,30 +239,61 @@ class LazySession implements \ArrayAccess {
     }
 
 
+
+
+
     public function flash($key, $value) {
         $this->start();
-        $flashArray = $this->get('__flashedNextRequest');
-        if ($flashArray === null) {
-            $this->set('__flashedNextRequest', []);
-        }
-        $_SESSION['__flashedNextRequest'][$key] = $value;
+        $_SESSION[self::FLASHED_NEXTREQ][$key] = $value;
     }
 
-    public function flashGet($key, $defaultValue = null) {
+    public function flashGet($key, $defaultValue = null, $deleteFlash = true) {
         $this->start();
-        if (array_key_exists($key, $_SESSION['__flashedThisRequest'])) {
-            $ret = $_SESSION['__flashedThisRequest'][$key];
-            unset($_SESSION['__flashedThisRequest'][$key]);
+        if (array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
+            $ret = $_SESSION[self::FLASHED_THISREQ][$key];
+
+            if ($deleteFlash) {
+                unset($_SESSION[self::FLASHED_THISREQ][$key]);
+            }
+
             return $ret;
         }
         return $defaultValue;
     }
 
-    public function flashGetAll() {
+    public function flashGetAll($deleteFlash = true) {
         $this->start();
         $ret = $this->get(self::FLASHED_THISREQ, []);
-        $_SESSION[self::FLASHED_THISREQ] = [];
+
+        if ($deleteFlash) {
+            $_SESSION[self::FLASHED_THISREQ] = [];
+        }
+
         return $ret;
+    }
+
+    public function flashGetNext($key, $defaultValue = null) {
+        $this->start();
+        if (array_key_exists($key, $_SESSION[self::FLASHED_NEXTREQ])) {
+            return $_SESSION[self::FLASHED_NEXTREQ][$key];
+        }
+        return $defaultValue;
+    }
+
+    public function flashGetAllNext() {
+        $this->start();
+        return $_SESSION[self::FLASHED_NEXTREQ];
+    }
+
+    /**
+     * Preserve all the flashed values available on this request and carry them onto the next request
+     * Any flashed value that has already been retrieved and deleted will not be preserved.
+     */
+    public function flashPreserve() {
+        $this->start();
+        foreach ($_SESSION[self::FLASHED_THISREQ] as $flashKey => $flashValue) {
+            $this->flash($flashKey, $flashValue);
+        }
     }
 
 }
