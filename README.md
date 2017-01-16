@@ -1,4 +1,4 @@
-# AutoSession
+# LazySession
 
 This package allows you to use sessions without having to worry about
 whether you have properly called `session_start()` or not.
@@ -27,14 +27,14 @@ with the class.
 
 From the command line:
 
-`composer install alejoluc/autosession`
+`composer install alejoluc/lazysession`
 
 Or write manually in `composer.json`:
 
 ```json
 {
   "require": {
-    "alejoluc/autosession": "*"
+    "alejoluc/lazysession": "*"
   }
 }
 ```
@@ -43,9 +43,9 @@ Or write manually in `composer.json`:
 
 ```php
 <?php
-use alejoluc\AutoSession\AutoSession;
+use alejoluc\LazySession\LazySession;
 
-$session = new AutoSession();
+$session = new LazySession();
 
 if ($page === 'login') {
     // Accessing session data using the object oriented interface
@@ -62,7 +62,7 @@ if ($page === 'login') {
     }   
 } elseif ($page === '...') {
     // Some page that does not need session data. In this branch of the
-    execution, session_start() will never be called
+    // execution, session_start() will never be called
 }
 ```
 
