@@ -39,30 +39,46 @@ Or write manually in `composer.json`:
 }
 ```
 
-## Instantiating the class: example login usage
+## Example usage: Instantiating the class and accessing session data in a crude login example
 
 ```php
 <?php
+require __DIR__ . '/vendor/autoload.php';
 use alejoluc\LazySession\LazySession;
 
 $session = new LazySession();
 
+$page = isset($_GET['page']) ? $_GET['page'] : 'login';
 if ($page === 'login') {
     // Accessing session data using the object oriented interface
     if ($session->get('logged-in') !== true) {
-        if (user_exists($sanitized_username, $sanitized_password)) {
+        // For clarity and space purposes, we assume that here a function
+        // checking for the existence of an user with request data would be
+        // called
+        if (true) {
             // Accessing session data via array keys
             $session['logged-in'] = true;
-            $session['username']  = $sanitized_username;
+            $session['username']  = 'Test_Username';
+            $session['email']     = 'test@email.com';
+            
+            echo 'You have logged in. Please refresh the page';
         }   
     } else {
-        echo "You are logged in, this is your data:\n";
+        echo "You are logged in, this is your data:<br />";
         // Accessing session data via object properties
-        echo "username: " . $session->username;
+        echo "username: " . $session->username . "<br />";
+        echo "e-mail: " . $session->email;
     }   
 } elseif ($page === '...') {
     // Some page that does not need session data. In this branch of the
     // execution, session_start() will never be called
+
+    // The following code will output the integer 1, which is the value of
+    // the constant PHP_SESSION_NONE. That means sessions are enabled
+    // but no session has been started
+    var_dump(session_status());
+} elseif ($page === 'logout') {
+    $session->clear();
 }
 ```
 
@@ -98,5 +114,21 @@ unset($session->key);
 ## Deleting all session data
 
 ```php
+<?php
+// [...instantiation, code...]
 $session->clear();
+```
+
+## Changing the session save path
+
+```php
+<?php
+// [...instantiation, code...]
+$session->savePath(__DIR__ . '/tmp/sessions/');
+$session->start(); // will create a session file in ./tmp/sessions/
+
+// The following is equivalent, and the class will behave
+// as expected after it
+session_save_path(__DIR__ . '/tmp/sessions/');
+$session->start(); // will create a session file in ./tmp/sessions/
 ```
