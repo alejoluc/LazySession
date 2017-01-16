@@ -15,7 +15,7 @@ class LazySession implements \ArrayAccess {
         }
     }
 
-    private function initFlash() {
+    private function initializeFlash() {
         // flashInitialized must be set to true at the top of this function to avoid infinite recursion
         $this->flashInitialized = true;
         $_SESSION[self::FLASHED_THISREQ] = $this->get(self::FLASHED_NEXTREQ, []);
@@ -31,7 +31,7 @@ class LazySession implements \ArrayAccess {
     public function start() {
         if (session_status() === PHP_SESSION_ACTIVE || session_start()) {
             if ($this->flashInitialized !== true) {
-                $this->initFlash();
+                $this->initializeFlash();
             }
             return true;
         }
