@@ -7,6 +7,8 @@ class LazySession implements \ArrayAccess {
     const FLASHED_NEXTREQ = '__flashedNextRequest';
     const FLASHED_THISREQ = '__flashedThisRequest';
 
+    const CSRF_TOKEN      = '__csrf_token';
+
     private $flashInitialized = false;
 
     public function __construct() {
@@ -294,6 +296,34 @@ class LazySession implements \ArrayAccess {
         foreach ($_SESSION[self::FLASHED_THISREQ] as $flashKey => $flashValue) {
             $this->flash($flashKey, $flashValue);
         }
+    }
+
+
+
+
+    public function getCsrfToken() {
+        if (!$this->hasCsrfToken()) {
+            $this->regenerateCsrfToken();
+        }
+        return $this->get(self::CSRF_TOKEN);
+    }
+
+    public function hasCsrfToken() {
+        $this->start();
+        return array_key_exists(self::CSRF_TOKEN, $_SESSION);
+    }
+
+    public function regenerateCsrfToken($length = 20) {
+        $random_string = bin2hex(random_bytes($length));
+        $this->set(self::CSRF_TOKEN, $random_string);
+        return $random_string;
+    }
+
+    public function validateCsrfToken($compare) {
+        if (function_exists('hash_equals')) {
+            return hash_equals($this->get(self::CSRF_TOKEN), $compare);
+        }
+        return $this->get(self::CSRF_TOKEN) === $compare;
     }
 
 }
