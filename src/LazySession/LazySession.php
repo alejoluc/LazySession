@@ -4,10 +4,22 @@ namespace alejoluc\LazySession;
 
 class LazySession implements \ArrayAccess {
 
+    const FLASHED_NEXTREQ = '__flashedNextRequest';
+    const FLASHED_THISREQ = '__flashedThisRequest';
+
+    private $flashInitialized = false;
+
     public function __construct() {
         if (session_status() === PHP_SESSION_DISABLED) {
             throw new SessionsDisabledException('Sessions are disabled in this PHP installation');
         }
+    }
+
+    private function initFlash() {
+        // flashInitialized must be set to true at the top of this function to avoid infinite recursion
+        $this->flashInitialized = true;
+        $_SESSION[self::FLASHED_THISREQ] = $this->get(self::FLASHED_NEXTREQ, []);
+        $_SESSION[self::FLASHED_NEXTREQ] = [];
     }
 
     /**
@@ -17,15 +29,13 @@ class LazySession implements \ArrayAccess {
      * @return bool
      */
     public function start() {
-        if (session_status() === PHP_SESSION_ACTIVE) {
+        if (session_status() === PHP_SESSION_ACTIVE || session_start()) {
+            if ($this->flashInitialized !== true) {
+                $this->initFlash();
+            }
             return true;
         }
-
-        if (session_start()) {
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -226,6 +236,33 @@ class LazySession implements \ArrayAccess {
      */
     public function setSaveHandler(\SessionHandlerInterface $handler, $register_shutdown = true) {
         return session_set_save_handler($handler, $register_shutdown);
+    }
+
+
+    public function flash($key, $value) {
+        $this->start();
+        $flashArray = $this->get('__flashedNextRequest');
+        if ($flashArray === null) {
+            $this->set('__flashedNextRequest', []);
+        }
+        $_SESSION['__flashedNextRequest'][$key] = $value;
+    }
+
+    public function flashGet($key, $defaultValue = null) {
+        $this->start();
+        if (array_key_exists($key, $_SESSION['__flashedThisRequest'])) {
+            $ret = $_SESSION['__flashedThisRequest'][$key];
+            unset($_SESSION['__flashedThisRequest'][$key]);
+            return $ret;
+        }
+        return $defaultValue;
+    }
+
+    public function flashGetAll() {
+        $this->start();
+        $ret = $this->get(self::FLASHED_THISREQ, []);
+        $_SESSION[self::FLASHED_THISREQ] = [];
+        return $ret;
     }
 
 }
