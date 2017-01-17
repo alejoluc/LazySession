@@ -300,7 +300,10 @@ class LazySession implements \ArrayAccess {
 
 
 
-
+    /**
+     * Gets the CSRF token for the session, generating one if needed
+     * @return string
+     */
     public function getCsrfToken() {
         if (!$this->hasCsrfToken()) {
             $this->regenerateCsrfToken();
@@ -308,17 +311,31 @@ class LazySession implements \ArrayAccess {
         return $this->get(self::CSRF_TOKEN);
     }
 
+    /**
+     * @return bool
+     */
     public function hasCsrfToken() {
         $this->start();
         return array_key_exists(self::CSRF_TOKEN, $_SESSION);
     }
 
+    /**
+     * Generates or regenerates the CSRF token for the session, and saves it
+     * @param int length The amount of bytes to generate for the random string that will become the CSRF token
+     * @return string
+     */
     public function regenerateCsrfToken($length = 20) {
         $random_string = bin2hex(random_bytes($length));
         $this->set(self::CSRF_TOKEN, $random_string);
         return $random_string;
     }
 
+    /**
+     * Will try to make a secure comparison against timing attack between the supplied value and the session CSRF token, falling
+     * back to a common comparison if the secure function is not present (if PHP < 5.6.0)
+     * @param string $compare The string to compare against
+     * @return bool
+     */
     public function validateCsrfToken($compare) {
         if (function_exists('hash_equals')) {
             return hash_equals($this->get(self::CSRF_TOKEN), $compare);
