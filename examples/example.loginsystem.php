@@ -8,12 +8,15 @@ $session = new LazySession();
 
 $page = isset($_GET['page']) ? $_GET['page'] : '';
 
+define('COLOR_INFO',    '#216baf');
+define('COLOR_ERROR',   '#990a22');
+define('COLOR_SUCCESS', '#0a6d19');
 
 switch ($page) {
     case 'logout':
         $session->clear();
         $session->flash('message', 'You have logged out');
-        $session->flash('message-bgcolor', '#216baf');
+        $session->flash('message-bgcolor', COLOR_INFO);
 
         header('Location: ?page=');
         break;
@@ -25,7 +28,7 @@ switch ($page) {
 
         if (!$session->validateCsrfToken($csrfToken)) {
             $session->flash('message', 'The access token is not valid. Are you attempting something?');
-            $session->flash('message-bgcolor', '#990a22');
+            $session->flash('message-bgcolor', COLOR_ERROR);
             header('Location: ?page=');
             exit;
         }
@@ -36,7 +39,7 @@ switch ($page) {
             $session['user_level'] = 1;
 
             $session->flash('message', 'You have logged in as a normal user');
-            $session->flash('message-bgcolor', '#0a6d19');
+            $session->flash('message-bgcolor', COLOR_SUCCESS);
 
             header('Location: ?page=');
         } elseif ($username === 'admin' && $password === 'admin') {
@@ -45,12 +48,12 @@ switch ($page) {
             $session['user_level'] = 2;
 
             $session->flash('message', 'You have loggedd in as an administrator');
-            $session->flash('message-bgcolor', '#0a6d19');
+            $session->flash('message-bgcolor', COLOR_SUCCESS);
 
             header('Location: ?page=');
         } else {
             $session->flash('message', 'No user and password found');
-            $session->flash('message-bgcolor', '#990a22');
+            $session->flash('message-bgcolor', COLOR_ERROR);
             header('Location: ?page=');
         }
         break;
