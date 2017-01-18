@@ -41,6 +41,16 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
+     * Preferred way to delete everything in the session, as keys and values of the $_SESSION array will not
+     * be available in the current request after calling this, unlike session_destroy()
+     * @return void
+     */
+    public function clear() {
+        $this->start();
+        $_SESSION = [];
+    }
+
+    /**
      * Checks whether a given key exists in the active session
      * @param string $key
      * @return bool
@@ -149,16 +159,6 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
-     * Preferred way to delete everything in the session, as keys and values of the $_SESSION array will not
-     * be available in the current request after calling this, unlike session_destroy()
-     * @return void
-     */
-    public function clear() {
-        $this->start();
-        $_SESSION = [];
-    }
-
-    /**
      * Note that this will not unset the keys and values in the current request, although they
      * will not be present on the next run. Use the clear() method for that. Per PHP's official
      * documentation, that's the recommended way of cleaning up session data.
@@ -240,15 +240,27 @@ class LazySession implements \ArrayAccess {
         return session_set_save_handler($handler, $register_shutdown);
     }
 
-
-
-
-
+    /**
+     * Flashes data, which means that the key and it's value will be available on the next request via the
+     * flashGet() and flashGetAll() methods, and available on this request via the flashGetNext() and
+     * flashGetAllNext() methods. When calling flashGet() or flashGetAll() on the next request, the flashed
+     * data will be erased, unless specifically choosing not to.
+     * @param string $key
+     * @param mixed $value
+     */
     public function flash($key, $value) {
         $this->start();
         $_SESSION[self::FLASHED_NEXTREQ][$key] = $value;
     }
 
+    /**
+     * Get flash data meant to be used in the current request, if it exists, and then optionally deletes
+     * it. If it does not exist, return a predefined default value.
+     * @param string $key
+     * @param mixed $defaultValue
+     * @param bool $deleteFlash
+     * @return mixed
+     */
     public function flashGet($key, $defaultValue = null, $deleteFlash = true) {
         $this->start();
         if (array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
@@ -263,6 +275,12 @@ class LazySession implements \ArrayAccess {
         return $defaultValue;
     }
 
+    /**
+     * Returns all the flashed data meant to be used in the current request, if any, and then optionally
+     * deletes them
+     * @param bool $deleteFlash
+     * @return array
+     */
     public function flashGetAll($deleteFlash = true) {
         $this->start();
         $ret = $this->get(self::FLASHED_THISREQ, []);
@@ -274,6 +292,12 @@ class LazySession implements \ArrayAccess {
         return $ret;
     }
 
+    /**
+     * Get flash data meant to be used in the <em>next</em> request, if it exists.
+     * @param string $key
+     * @param mixed $defaultValue
+     * @return mixed
+     */
     public function flashGetNext($key, $defaultValue = null) {
         $this->start();
         if (array_key_exists($key, $_SESSION[self::FLASHED_NEXTREQ])) {
@@ -282,14 +306,18 @@ class LazySession implements \ArrayAccess {
         return $defaultValue;
     }
 
+    /**
+     * Returns all the flashed data meant to be used in the <em>next</em> request, if any exists.
+     * @return array
+     */
     public function flashGetAllNext() {
         $this->start();
         return $_SESSION[self::FLASHED_NEXTREQ];
     }
 
     /**
-     * Preserve all the flashed values available on this request and carry them onto the next request
-     * Any flashed value that has already been retrieved and deleted will not be preserved.
+     * Preserve all the flashed data available on this request and carry them onto the next request.
+     * <strong>Any flashed value that has already been retrieved and deleted will not be preserved.</strong>
      */
     public function flashPreserve() {
         $this->start();
@@ -321,7 +349,7 @@ class LazySession implements \ArrayAccess {
 
     /**
      * Generates or regenerates the CSRF token for the session, and saves it
-     * @param int length The amount of bytes to generate for the random string that will become the CSRF token
+     * @param int $length The amount of bytes to generate for the random string that will become the CSRF token
      * @return string
      */
     public function regenerateCsrfToken($length = 20) {
