@@ -254,6 +254,15 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
+     * @param string $key
+     * @return bool
+     */
+    public function flashHas($key) {
+        $this->start();
+        return array_key_exists($key, $_SESSION[self::FLASHED_THISREQ]);
+    }
+
+    /**
      * Get flash data meant to be used in the current request, if it exists, and then optionally deletes
      * it. If it does not exist, return a predefined default value.
      * @param string $key
