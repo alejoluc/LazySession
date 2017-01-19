@@ -27,7 +27,7 @@ with the class.
 
 From the command line:
 
-`composer install alejoluc/lazysession`
+`composer require alejoluc/lazysession`
 
 Or write manually in `composer.json`:
 
