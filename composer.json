@@ -1,19 +1,21 @@
 {
-  "name": "alejoluc/lazysession",
-  "description": "",
-  "minimum-stability": "stable",
-  "version": "0.1",
-  "license": "MIT",
-  "authors": [
+  "name"        : "alejoluc/lazysession",
+  "description" : "Package to use sessions without having to call session_start(). It will not call session_start() unless the request uses sessions.",
+  "version"     : "0.1",
+
+  "keywords"  : ["sessions", "lazy"],
+  "homepage"  : "https://github.com/alejoluc/LazySession",
+  "license"   : "MIT",
+  "authors"   : [
     {
-      "name": "Alejo Lucangeli",
-      "email": "alejolucangeli@gmail.com"
+      "name"  : "Alejo Lucangeli",
+      "email" : "alejolucangeli@gmail.com",
+      "role"  : "Developer"
     }
   ],
 
   "require" : {
       "php": ">=5.4.0",
-      
       "paragonie/random_compat": "2.*"
   },
 
