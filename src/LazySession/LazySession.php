@@ -51,17 +51,27 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
-     * Checks whether a given key exists in the active session
+     * Checks whether a given key exists in the active session, including data flashed on the previous
+     * request.
+     * You can alternatively use isset() on the LazySession object's properties, either as an array
+     * or as an object, but remember that in PHP a null value will return false in isset()
      * @param string $key
      * @return bool
      */
     public function has($key) {
         $this->start();
-        return array_key_exists($key, $_SESSION);
+        if (array_key_exists($key, $_SESSION)) {
+            return true;
+        } elseif (array_key_exists(self::FLASHED_NEXTREQ, $_SESSION) &&
+            array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Gets the value of a given session key if it exists
+     * Gets the value of a given session key if it exists, including data flashed on the previous request.
      * @param string $key
      * @param mixed $defaultValue If the key does not exist, this will be returned
      * @return mixed If the key exists, it returns the value. Otherwise, it returns $defaultValue
@@ -70,6 +80,9 @@ class LazySession implements \ArrayAccess {
         $this->start();
         if (array_key_exists($key, $_SESSION)) {
             return $_SESSION[$key];
+        } elseif (array_key_exists(self::FLASHED_NEXTREQ, $_SESSION) &&
+            array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
+            return $this->flashGet($key, $defaultValue);
         }
         return $defaultValue;
     }
@@ -241,10 +254,11 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
-     * Flashes data, which means that the key and it's value will be available on the next request via the
-     * flashGet() and flashGetAll() methods, and available on this request via the flashGetNext() and
-     * flashGetAllNext() methods. When calling flashGet() or flashGetAll() on the next request, the flashed
-     * data will be erased, unless specifically choosing not to.
+     * Flashes data, which means that the key and it's value will only be available on the next request via
+     * the get(), flashGet() and flashGetAll() methods, or by accessing the LazySession object properties
+     * as an array or an object.
+     * The flashed data will also be available on this request via the flashGetNext() and flashGetAllNext()
+     * methods.
      * @param string $key
      * @param mixed $value
      */
@@ -254,6 +268,8 @@ class LazySession implements \ArrayAccess {
     }
 
     /**
+     * You can alternatively use the has() method, or use isset() in the LazySession object's properties,
+     * either as an array or as an object, but remember that in PHP a null value will return false in isset()
      * @param string $key
      * @return bool
      */
@@ -265,12 +281,14 @@ class LazySession implements \ArrayAccess {
     /**
      * Get flash data meant to be used in the current request, if it exists, and then optionally deletes
      * it. If it does not exist, return a predefined default value.
+     * You can alternatively use the get() method or access the LazySession object properties as an array
+     * or an object.
      * @param string $key
      * @param mixed $defaultValue
      * @param bool $deleteFlash
      * @return mixed
      */
-    public function flashGet($key, $defaultValue = null, $deleteFlash = true) {
+    public function flashGet($key, $defaultValue = null, $deleteFlash = false) {
         $this->start();
         if (array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
             $ret = $_SESSION[self::FLASHED_THISREQ][$key];
@@ -290,7 +308,7 @@ class LazySession implements \ArrayAccess {
      * @param bool $deleteFlash
      * @return array
      */
-    public function flashGetAll($deleteFlash = true) {
+    public function flashGetAll($deleteFlash = false) {
         $this->start();
         $ret = $this->get(self::FLASHED_THISREQ, []);
 
@@ -334,8 +352,6 @@ class LazySession implements \ArrayAccess {
             $this->flash($flashKey, $flashValue);
         }
     }
-
-
 
     /**
      * Gets the CSRF token for the session, generating one if needed
