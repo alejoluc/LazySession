@@ -62,7 +62,7 @@ class LazySession implements \ArrayAccess {
         $this->start();
         if (array_key_exists($key, $_SESSION)) {
             return true;
-        } elseif (array_key_exists(self::FLASHED_NEXTREQ, $_SESSION) &&
+        } elseif (array_key_exists(self::FLASHED_THISREQ, $_SESSION) &&
             array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
             return true;
         }
@@ -80,7 +80,7 @@ class LazySession implements \ArrayAccess {
         $this->start();
         if (array_key_exists($key, $_SESSION)) {
             return $_SESSION[$key];
-        } elseif (array_key_exists(self::FLASHED_NEXTREQ, $_SESSION) &&
+        } elseif (array_key_exists(self::FLASHED_THISREQ, $_SESSION) &&
             array_key_exists($key, $_SESSION[self::FLASHED_THISREQ])) {
             return $this->flashGet($key, $defaultValue);
         }
