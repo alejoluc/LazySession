@@ -270,6 +270,7 @@ class LazySession implements \ArrayAccess {
     /**
      * You can alternatively use the has() method, or use isset() in the LazySession object's properties,
      * either as an array or as an object, but remember that in PHP a null value will return false in isset()
+     * @see has()
      * @param string $key
      * @return bool
      */
@@ -283,6 +284,7 @@ class LazySession implements \ArrayAccess {
      * it. If it does not exist, return a predefined default value.
      * You can alternatively use the get() method or access the LazySession object properties as an array
      * or an object.
+     * @see get()
      * @param string $key
      * @param mixed $defaultValue
      * @param bool $deleteFlash
