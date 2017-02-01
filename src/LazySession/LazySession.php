@@ -4,12 +4,19 @@ namespace alejoluc\LazySession;
 
 class LazySession implements \ArrayAccess {
 
+    /**
+     * The reason a static property is used is that, otherwise, if two different instances of LazySession are present,
+     * then each one will try to initialize the flashing mechanism, which will result in values that are supposed to be
+     * flashed for the next request to be brought to be used in this request (when the second instance initializes
+     * the flashing mechanism).
+     * @var boolean
+     */
+    static $flashInitialized = false;
+
     const FLASHED_NEXTREQ = '__flashedNextRequest';
     const FLASHED_THISREQ = '__flashedThisRequest';
 
     const CSRF_TOKEN      = '__csrf_token';
-
-    private $flashInitialized = false;
 
     public function __construct() {
         if (session_status() === PHP_SESSION_DISABLED) {
@@ -19,7 +26,7 @@ class LazySession implements \ArrayAccess {
 
     private function initializeFlash() {
         // flashInitialized must be set to true at the top of this function to avoid infinite recursion
-        $this->flashInitialized = true;
+        static::$flashInitialized = true;
         $_SESSION[self::FLASHED_THISREQ] = $this->get(self::FLASHED_NEXTREQ, []);
         $_SESSION[self::FLASHED_NEXTREQ] = [];
     }
@@ -32,7 +39,7 @@ class LazySession implements \ArrayAccess {
      */
     public function start() {
         if (session_status() === PHP_SESSION_ACTIVE || session_start()) {
-            if ($this->flashInitialized !== true) {
+            if (static::$flashInitialized !== true) {
                 $this->initializeFlash();
             }
             return true;
