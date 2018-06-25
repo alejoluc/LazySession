@@ -119,6 +119,32 @@ unset($session->key);
 $session->clear();
 ```
 
+## Flashing data for the next request
+
+Those familiar with Laravel will most likely be used to flashing data in sessions to be used in the next request. This is possible with LazySession
+
+```php
+<?php
+//[..instantiation..]
+if ($app->performAction()) {
+    $session->flash('message', 'Everything happened successfully');
+    $session->flash('message-type', 'info');
+} else {
+    $session->flash('message', 'Error: nothing happened');
+    $session->flash('message-type', 'error');
+}
+```
+
+To retrieve the flashed data in the next request you can either use the specific `flashGet()` method or use the more general `get()` method. Both will work.
+
+```php
+<?php
+//[..instantiation]]
+if ($session->has('message')) { // Equivalent to $session->flashHas('message')
+    echo '<div class="message-' . $session->get('message-type') . '">' . $session->get('message') . '</div>"';
+}
+```
+
 ## Changing the session save path
 
 ```php

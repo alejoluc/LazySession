@@ -1,7 +1,7 @@
 {
   "name"        : "alejoluc/lazysession",
   "description" : "Package to use sessions without having to call session_start(). It will not call session_start() unless the request uses sessions.",
-  "version"     : "0.1.3",
+  "version"     : "0.1.4",
 
   "keywords"  : ["sessions", "lazy"],
   "homepage"  : "https://github.com/alejoluc/LazySession",
